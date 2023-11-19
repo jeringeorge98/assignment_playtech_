@@ -1,5 +1,9 @@
-163f23ed-e9a9-4e54-a5b1-4e1fc86f12f4 2725 0,14
+List of legitimate players:
+4925ac98-833b-454b-9342-13ed3dfd3ccf 1026.0 0.5
+163f23ed-e9a9-4e54-a5b1-4e1fc86f12f4 2980.0 0.14285714285714285
 
-4925ac98-833b-454b-9342-13ed3dfd3ccf WITHDRAW null 8093 null
+List of illegitimate players:
+4925ac98-833b-454b-9342-13ed3dfd3ccf WITHDRAW null 8093
 
-75
+
+Casino host balance change: -10172
