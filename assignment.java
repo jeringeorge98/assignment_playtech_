@@ -12,13 +12,13 @@ public class assignment {
         private UUID matchId;
         private double rateA;
         private double rateB;
-        private Team result;
+        private Result result;
 
         public MatchInfo(UUID matchId, double rateA, double rateB, String result) {
             this.matchId = matchId;
             this.rateA = rateA;
             this.rateB = rateB;
-            this.result = Team.valueOf(result);
+            this.result = Result.valueOf(result);
         }
 
         public double getRateA() {
@@ -29,7 +29,7 @@ public class assignment {
             return rateB;
         }
 
-        public Team getResult() {
+        public Result getResult() {
             return result;
         }
 
@@ -138,7 +138,7 @@ public class assignment {
 
         private boolean checkMoveValidity(TransactionInfo transaction) {
             int amount = transaction.getAmount();
-            if (firstIllegalMove == null)
+            if (firstIllegalMove != null)
                 return false;
 
             boolean isValid = amount <= this.balance;
@@ -175,8 +175,8 @@ public class assignment {
         DEPOSIT, WITHDRAW, BET
     }
 
-    enum Team {
-        A, B
+    enum Result {
+        A, B, DRAW, NO_SIDE
     }
 
     public static class TransactionInfo {
@@ -184,14 +184,14 @@ public class assignment {
         private MoveType moveType;
         private UUID matchId;
         private int amount;
-        private Team team;
+        private Result result;
 
-        public TransactionInfo(UUID playerId, MoveType moveType, UUID matchId, int amount, Team teamWon) {
+        public TransactionInfo(UUID playerId, MoveType moveType, UUID matchId, int amount, Result result) {
             this.playerId = playerId;
             this.moveType = moveType;
             this.matchId = matchId;
             this.amount = amount;
-            this.team = teamWon;
+            this.result = result;
         }
 
         public UUID getPlayerId() {
@@ -226,12 +226,12 @@ public class assignment {
             this.amount = money;
         }
 
-        public Team getTeam() {
-            return team;
+        public Result getResult() {
+            return result;
         }
 
-        public void setTeam(Team team) {
-            this.team = team;
+        public void setResult(Result team) {
+            this.result = team;
         }
     }
 
@@ -276,9 +276,14 @@ public class assignment {
             // Check if player won the bet
 
             int addedMoney = 0;
-            if (transactionInfo.getTeam() == matchInfo.getResult()) {
+            if (transactionInfo.getResult() == Result.DRAW) {
+                player.addWin();
+                addedMoney = transactionInfo.getAmount();
+            } else if (transactionInfo.getResult() == matchInfo.getResult()) {
+                player.addWin();
                 addedMoney = (int) (transactionInfo.getAmount() * matchInfo.getRateA());
             } else {
+                player.addLose();
                 addedMoney = (int) (transactionInfo.getAmount() * matchInfo.getRateB());
             }
             player.addToBalance(addedMoney);
@@ -291,11 +296,19 @@ public class assignment {
                 String line;
                 while ((line = br.readLine()) != null) {
                     String[] parts = line.split(",");
-                    Team side = Team.valueOf(parts[5]);
-                    UUID playerId = UUID.fromString(parts[0]);
-                    UUID matchId = UUID.fromString(parts[2]);
                     MoveType action = MoveType.valueOf(parts[1]);
-                    int amount = Integer.parseInt(parts[4]);
+                    Result side = Result.NO_SIDE;
+                    UUID matchId = null;
+                    if (!parts[2].equals(""))
+                        matchId = UUID.fromString(parts[2]);
+
+                    if (action == MoveType.BET) {
+                        side = Result.valueOf(parts[4]);
+                    }
+
+                    UUID playerId = UUID.fromString(parts[0]);
+
+                    int amount = Integer.parseInt(parts[3]);
 
                     TransactionInfo transaction = new TransactionInfo(playerId, action, matchId, amount, side);
                     Player player = getPlayerOrCreate(playerId);
